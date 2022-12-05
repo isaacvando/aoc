@@ -1,0 +1,29 @@
+cabal-version:      2.4
+name:               aoc2022
+version:            0.1.0.0
+author:             Isaac Van Doren
+common flags
+    default-language: Haskell2010
+
+common packages
+    build-depends: base, megaparsec, containers, split, extra
+
+executable Day1
+    import: flags, packages
+    main-is: Day1.hs
+
+executable Day2
+    import: flags, packages
+    main-is: Day2.hs
+
+executable Day3
+    import: flags, packages
+    main-is: Day3.hs
+
+executable Day4
+    import: flags, packages
+    main-is: Day4.hs
+
+executable Day5
+    import: flags, packages
+    main-is: Day5.hs

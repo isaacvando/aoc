@@ -1,5 +1,3 @@
-module Main where
-
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import Data.Void
@@ -28,7 +26,6 @@ import Data.List.Extra
 --     char '-'
 --     n2 <- some digitChar
 --     return (read n1 :: Int, read n2 :: Int)
-
 
 main :: IO ()
 main = do

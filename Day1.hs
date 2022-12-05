@@ -1,5 +1,3 @@
-module Main where
-
 import Data.List.Split
 import Data.List
 
