@@ -1,6 +1,6 @@
 main :: IO ()
 main = do
-    input <- getContents
+    input <- readFile "2.txt"
     print $ (sum . map (\(x:y:[]) -> getScore x y) . map (map getValue) . map words . lines) input
     print $ (sum . map (\(x:y:[]) -> getScore x y) . map convertToPlay . map (map getValue) . map words . lines) input
 
