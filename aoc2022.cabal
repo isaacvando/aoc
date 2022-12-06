@@ -27,3 +27,7 @@ executable Day4
 executable Day5
     import: flags, packages
     main-is: Day5.hs
+
+executable Day6
+    import: flags, packages
+    main-is: Day6.hs
