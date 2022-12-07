@@ -3,7 +3,7 @@ import Data.List
 
 main :: IO ()
 main = do
-    input <- readFile "3.txt"
+    input <- readFile "input/3.txt"
     print $ solve input
     print $ solve' input
 

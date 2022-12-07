@@ -8,7 +8,7 @@ type Parser = Parsec Void String
 
 main :: IO ()
 main = do
-    input <- readFile "7.txt"
+    input <- readFile "input/7.txt"
     case parse dir "" input of
         Left x -> putStrLn $ errorBundlePretty x 
         Right x -> do

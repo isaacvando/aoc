@@ -3,7 +3,7 @@ import Data.List
 
 main :: IO ()
 main = do
-    input <- readFile "6.txt"
+    input <- readFile "input/6.txt"
     print $ count (take 4 input) (drop 4 input) 4
     print $ count (take 14 input) (drop 14 input) 14
 

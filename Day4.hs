@@ -7,7 +7,7 @@ import Data.List.Extra
 
 main :: IO ()
 main = do
-    input <- readFile "4.txt"
+    input <- readFile "input/4.txt"
     case parse p "" input of
         Left bundle -> putStrLn $ errorBundlePretty bundle
         Right x -> do

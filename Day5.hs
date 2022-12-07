@@ -6,7 +6,7 @@ import Data.Char
 
 main :: IO ()
 main = do
-    input <- fmap lines (readFile "5.txt")
+    input <- fmap lines (readFile "input/5.txt")
     let crates = getCrates input
     let inst = map getInst (drop 10 input)
     putStrLn $ map head $ foldl' (\acc [x,y,z] -> move x y z acc) crates inst
