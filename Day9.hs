@@ -24,6 +24,11 @@ move visited [] _ t = Set.insert t visited
 move visited (m:moves) h t = move (Set.insert t visited) moves h' (moveTail h' t)
     where h' = moveHead m h
 
+move' :: Set.Set Pos -> [Move] -> [Pos] -> Set.Set Pos
+move' visited [] rope = Set.insert (last rope) visited
+move' visited (m:moves) rope = move' (Set.insert (last rope') visited) moves rope'
+    where rope' = moveRope m rope
+
 moveHead :: Move -> Pos -> Pos
 moveHead m = case m of
     R -> first (+1)
@@ -32,42 +37,16 @@ moveHead m = case m of
     D -> second (+(-1))
 
 moveTail :: Pos -> Pos -> Pos
-moveTail h@(h1,h2) t@(t1,t2)
-    | dist h t <= 1 = t
-    | h1 == t1 && h2 < t2 = (t1,t2-1)
-    | h1 == t1 && h2 > t2 = (t1,t2+1)
-    | h2 == t2 && h1 < t1 = (t1-1,t2)
-    | h2 == t2 && h1 > t1 = (t1+1,t2)
-    | t1 - h1 == 2 = (h1+1,h2)
-    | h1 - t1 == 2 = (h1-1,h2)
-    | t2 - h2 == 2 = (h1,h2+1)
-    | h2 - t2 == 2 = (h1,h2-1)
-    | otherwise = error $ "head: " ++ show h ++ " tail: " ++ show t
-    where dist (a,b) (x,y) = max (abs (a - x)) (abs (b - y))
-
-moveTail' :: Pos -> Pos -> Pos
-moveTail' h@(h1,h2) t@(t1,t2)
-    | dist h t <= 1 = t
-    | h1 == t1 && h2 < t2 = (t1,t2-1)
-    | h1 == t1 && h2 > t2 = (t1,t2+1)
-    | h2 == t2 && h1 < t1 = (t1-1,t2)
-    | h2 == t2 && h1 > t1 = (t1+1,t2)
-    | t1 - h1 == 2 && t2 - h2 == 2 = (h1+1,h2+1)
-    | h1 - t1 == 2 && h2 - t2 == 2 = (h1-1,h2-1)
-    | t1 - h1 == 2 && h2 - t2 == 2 = (h1+1,h2-1)
-    | h1 - t1 == 2 && t2 - h2 == 2 = (h1-1,h2+1)
-    | t1 - h1 == 2 = (h1+1,h2)
-    | h1 - t1 == 2 = (h1-1,h2)
-    | t2 - h2 == 2 = (h1,h2+1)
-    | h2 - t2 == 2 = (h1,h2-1)
-    | otherwise = error $ "head: " ++ show h ++ " tail: " ++ show t
-    where dist (a,b) (x,y) = max (abs (a - x)) (abs (b - y))
-
-move' :: Set.Set Pos -> [Move] -> [Pos] -> Set.Set Pos
-move' visited [] rope = Set.insert (last rope) visited
-move' visited (m:moves) rope = move' (Set.insert (last rope') visited) moves rope'
-    where rope' = moveRope m rope
+moveTail (h1,h2) (t1,t2) 
+    | dist (h1,h2) (t1,t2)  <= 1 = (t1,t2)
+    | otherwise = (adjust h1 t1, adjust h2 t2)
+    where 
+        dist (a,b) (x,y) = max (abs (a - x)) (abs (b - y))
+        adjust h t
+            | h < t && t - h >= 2 = h+1
+            | h > t && h - t >= 2 = h-1
+            | otherwise = h
 
 moveRope :: Move -> [Pos] -> [Pos]
-moveRope m (h:ps) = foldl' (\acc x -> acc ++ [moveTail' (last acc) x]) [h'] ps
+moveRope m (h:ps) = foldl' (\acc x -> acc ++ [moveTail (last acc) x]) [h'] ps
     where h' = moveHead m h
