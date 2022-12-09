@@ -7,10 +7,12 @@ type Pos = (Int,Int)
 main :: IO ()
 main = do
     input <- readFile "input/8.txt"
-    let trees = (getMap . map (map digitToInt) . lines) input
-    print $ (length . filter id . map (or . snd) . Map.toList . Map.mapWithKey (\k v -> map (comp trees k v) moves)) trees
-    print $ (maximum . map (product . snd) . Map.toList . Map.mapWithKey (\k v -> map (count trees k v) moves)) trees
+    let trees = (getPositions . map (map digitToInt) . lines) input
+    let treeMap = Map.fromList trees
+    print $ (length . filter id . map or . map (\(k, v) -> map (comp treeMap k v) moves)) trees
+    print $ (maximum . map product . map (\(k, v) -> map (count treeMap k v) moves)) trees
         where 
+            moves :: [Pos -> Pos]
             moves = [first (+1), first (+(-1)), second (+1), second (+(-1))]
 
 comp :: Map.Map Pos Int -> Pos -> Int -> (Pos -> Pos) -> Bool
@@ -23,5 +25,5 @@ count trees position val move = let pos = move position in case Map.lookup pos t
     Nothing -> 0
     Just x -> if x >= val then 1 else 1 + count trees pos val move
 
-getMap :: [[Int]] -> Map.Map Pos Int
-getMap xs = Map.fromList $ concat [[ ((row,col), (xs !! row) !! col) | col <- [0..length (head xs) - 1]] | row <- [0..length xs - 1]]
+getPositions :: [[Int]] -> [(Pos,Int)]
+getPositions xs = concat [[ ((row,col), (xs !! row) !! col) | col <- [0..length (head xs) - 1]] | row <- [0..length xs - 1]]
