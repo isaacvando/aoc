@@ -43,3 +43,7 @@ executable Day8
 executable Day9
     import: flags, packages
     main-is: Day9.hs
+
+executable Day10
+    import: flags, packages
+    main-is: Day10.hs
