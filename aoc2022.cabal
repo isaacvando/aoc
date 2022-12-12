@@ -51,3 +51,7 @@ executable Day10
 executable Day11
     import: flags, packages
     main-is: Day11.hs
+
+executable Day12
+    import: flags, packages
+    main-is: Day12.hs
