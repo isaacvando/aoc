@@ -1,45 +1,39 @@
 import qualified Data.Map as Map
 import qualified Data.Set as Set
-import Data.Bifunctor
 
 type Pos = (Int,Int)
 type Grid = Map.Map Pos Char
 type Path = [Pos]
-
+type Visited = Set.Set Pos
 
 main :: IO ()
 main = do
     input <- readFile "input/12.txt"
     let grid = Map.fromList ((getMap . lines) input)
-    let (start, end) = getStartAndEnd (lines input)
-    let starts = getstarts (lines input)
+    let start = head (locations (== 'S') input)
+    let end = head (locations (== 'E') input)
+    let starts = locations (\x -> x == 'S' || x == 'a') input
     print $ (subtract 1 . length . head . search grid Set.empty [[start]]) end
     print $ (minimum . map (subtract 1 . length) . search grid (foldr Set.insert Set.empty starts) (map (:[]) starts)) end
 
-search :: Grid -> Set.Set Pos -> [[Pos]] -> Pos -> [[Pos]]
-search grid visited paths end
+search :: Grid -> Visited -> [[Pos]] -> Pos -> [[Pos]]
+search grid vis paths end
     | (not . null) successes = paths'
-    | otherwise = search grid visited' paths' end
+    | otherwise = search grid vis' paths' end
     where 
-        paths' = getPaths grid visited paths
-        visited' = foldr Set.insert visited (map head paths')
-        successes = filter isWin paths'
-        isWin (p:ps) = p == end
+        paths' = getPaths grid vis paths
+        vis' = foldr Set.insert vis (map head paths')
+        successes = filter ((== end) . head) paths'
         
-getPaths :: Grid -> Set.Set Pos -> [Path] -> [Path]
+getPaths :: Grid -> Visited -> [Path] -> [Path]
 getPaths _ _ [] = []
-getPaths grid visited (x:xs) = map (:x) moves ++ getPaths grid visited' xs
+getPaths grid vis (x:xs) = map (:x) moves ++ getPaths grid vis' xs
     where 
-        moves = getMoves grid visited x
-        visited' = foldr Set.insert visited moves
-
-getMoves :: Grid -> Set.Set Pos -> Path -> [Pos]
-getMoves grid visited (pos:tail) = filter (isLegal grid visited pos) (map ($ pos) [first (+1), first (+ (-1)), second (+1), second (+ (-1))])
-
-isLegal :: Grid -> Set.Set Pos -> Pos -> Pos -> Bool
-isLegal grid visited from to = case (Map.lookup from grid, Map.lookup to grid) of
-    (Just x, Just y) -> x >= pred y && not (Set.member to visited)
-    _ -> False
+        isLegal from to = case (Map.lookup from grid, Map.lookup to grid) of
+            (Just x, Just y) -> x >= pred y && not (Set.member to vis)
+            _ -> False
+        moves = let (r,c) = head x in filter (isLegal (r,c)) [(r+1,c), (r-1,c), (r,c+1), (r,c-1)]
+        vis' = foldr Set.insert vis moves
 
 getMap :: [String] -> [((Int,Int),Char)]
 getMap xss = concat [ [ ((row,col), adjust ((xss !! row) !! col)) | col <- [0..length (head xss) -1]] | row <- [0..length xss -1]]
@@ -49,11 +43,6 @@ getMap xss = concat [ [ ((row,col), adjust ((xss !! row) !! col)) | col <- [0..l
             'E' -> 'z'
             x -> x
 
-getStartAndEnd :: [String] -> (Pos,Pos)
-getStartAndEnd xss = (start, end)
-    where 
-        start = (head . concat) [ [ (row,col) | col <- [0..length (head xss) -1], (xss !! row) !! col == 'S'] | row <- [0..length xss -1]]
-        end = (head . concat) [[ (row,col) | col <- [0..length (head xss) -1], (xss !! row) !! col == 'E'] | row <- [0..length xss -1]]
-
-getstarts :: [String] -> [Pos]
-getstarts xss = concat [[ (row,col) | col <- [0..length (head xss) -1], let spot = (xss !! row) !! col, spot == 'a' || spot == 'S'] | row <- [0..length xss -1]]
+locations :: (Char -> Bool) -> String -> [Pos]
+locations pred input = let xss = lines input in
+    concat [[ (row,col) | col <- [0..length (head xss) -1], pred ((xss !! row) !! col)] | row <- [0..length xss -1]]
