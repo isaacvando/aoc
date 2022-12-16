@@ -60,3 +60,6 @@ executable Day13
     import: flags, packages
     main-is: Day13.hs
 
+executable Day14
+    import: flags, packages
+    main-is: Day14.hs
