@@ -12,6 +12,9 @@ common flags
         -Wno-incomplete-uni-patterns
         -Wno-prepositive-qualified-module
         -Wno-compat-unqualified-imports
+        -Wno-safe
+        -Wno-implicit-prelude
+        -Wno-missing-safe-haskell-mode
 
 common packages
     build-depends: base, megaparsec, containers, split, extra, data-interval
@@ -75,3 +78,15 @@ executable Day14
 executable Day15
     import: flags, packages
     main-is: Day15.hs
+
+executable Day16
+    import: flags, packages
+    main-is: Day16.hs
+
+executable Day17
+    import: flags, packages
+    main-is: Day17.hs
+
+executable Day18
+    import: flags, packages
+    main-is: Day18.hs
