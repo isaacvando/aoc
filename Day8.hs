@@ -26,4 +26,4 @@ count trees position val move = let pos = move position in case Map.lookup pos t
     Just x -> if x >= val then 1 else 1 + count trees pos val move
 
 getPositions :: [[Int]] -> [(Pos,Int)]
-getPositions xs = concat [[ ((row,col), (xs !! row) !! col) | col <- [0..length (head xs) - 1]] | row <- [0..length xs - 1]]
+getPositions xs = [((row,col), (xs !! row) !! col) | col <- [0..length (head xs) - 1], row <- [0..length xs - 1]]

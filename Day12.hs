@@ -36,7 +36,7 @@ getPaths grid vis (x:xs) = map (:x) moves ++ getPaths grid vis' xs
         vis' = foldr Set.insert vis moves
 
 getMap :: [String] -> [((Int,Int),Char)]
-getMap xss = concat [ [ ((row,col), adjust ((xss !! row) !! col)) | col <- [0..length (head xss) -1]] | row <- [0..length xss -1]]
+getMap xss = [((row,col), adjust ((xss !! row) !! col)) | col <- [0..length (head xss) -1], row <- [0..length xss -1]]
     where
         adjust c = case c of
             'S' -> 'a'
@@ -45,4 +45,4 @@ getMap xss = concat [ [ ((row,col), adjust ((xss !! row) !! col)) | col <- [0..l
 
 locations :: (Char -> Bool) -> String -> [Pos]
 locations pred input = let xss = lines input in
-    concat [[ (row,col) | col <- [0..length (head xss) -1], pred ((xss !! row) !! col)] | row <- [0..length xss -1]]
+    [(row,col) | col <- [0..length (head xss) -1], row <- [0..length xss -1], pred ((xss !! row) !! col)]
