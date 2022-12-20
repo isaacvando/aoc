@@ -17,7 +17,7 @@ common flags
         -Wno-missing-safe-haskell-mode
 
 common packages
-    build-depends: base, megaparsec, containers, split, extra, data-interval
+    build-depends: base, megaparsec, containers, split, extra, data-interval, data-clist
 
 executable Day1
     import: flags, packages
@@ -90,3 +90,11 @@ executable Day17
 executable Day18
     import: flags, packages
     main-is: Day18.hs
+
+executable Day19
+    import: flags, packages
+    main-is: Day19.hs
+
+executable Day20
+    import: flags, packages
+    main-is: Day20.hs
