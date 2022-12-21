@@ -98,3 +98,7 @@ executable Day19
 executable Day20
     import: flags, packages
     main-is: Day20.hs
+
+executable Day21
+    import: flags, packages
+    main-is: Day21.hs

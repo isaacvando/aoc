@@ -11,32 +11,27 @@ type Graph = M.Map String (Int,[String])
 
 main :: IO ()
 main = do
-    input <- readFile "foo.txt"
-    -- input <- readFile "input/16.txt"
+    -- input <- readFile "foo.txt"
+    input <- readFile "input/16.txt"
     let valves = map getValve (lines input)
     let graph = M.fromList valves
-    let start = map ((:[]) . Goto . fst) valves
-    let paths = foldl' (\acc _ -> refine graph (concatMap (steps graph) acc)) start [1..30]
+    let paths = foldl' (\acc _ -> refine graph (concatMap (steps graph) acc)) [[Goto "AA"]] [1..30]
     print $ getValue graph (getMax graph paths)
-    -- print $ (getMax graph paths)
-
-    -- print $ getValue graph ( reverse [Goto "DD", Open "DD", Goto "CC", Goto "BB", Open "BB", Goto "AA", Goto "II", Goto "JJ", Open "JJ", Goto "II", Goto "AA", Goto "DD", Goto "EE", Goto "FF", Goto "GG", Goto "HH", Open "HH", Goto "GG", Goto "FF", Goto "EE", Open "EE", Goto "DD", Goto "CC", Open "CC"])
 
 refine :: Graph -> [Path] -> [Path]
 refine graph paths = foldr (\x acc -> (getMax graph (collect x)) : acc) [] symbols
     where 
         symbols = nub (map head paths)
         collect symb = filter (\x -> head x == symb) paths
-        
+
 getMax :: Graph -> [Path] -> Path
-getMax graph paths = let xs = map (\x -> (x, getValue graph x)) paths in f xs (-1) []
+getMax graph paths = f paths (-1) []
     where 
-        f :: [(Path,Int)] -> Int -> Path -> Path
-        f [] m result = result
-        f ((p,val):xs) m result = if val > m then f xs val p else f xs m result
+        f [] _ result = result
+        f (x:xs) n result = let v = getValue graph x in if v > n then f xs v x else f xs n result
 
 getValue :: Graph -> Path -> Int
-getValue graph path = f (reverse path) 0 1
+getValue graph path = f (reverse path) 0 0
     where
         f [] total _ = total
         f (x:xs) total n = case x of
@@ -45,6 +40,7 @@ getValue graph path = f (reverse path) 0 1
                 where flow = fst (fromJust (M.lookup loc graph))
 
 steps :: Graph -> Path -> [Path]
+steps _ [] = error "wtf"
 steps graph (x:xs) = filter valid (map (:x:xs) moves)
     where 
         valid path = (opens path) == nub (opens path)
@@ -72,6 +68,3 @@ valve = do
         *> (string "valve " <|> string "valves ") 
         *> some (some letterChar <* optional (string ", "))
     return (name,(read rate,neighbors))
-
--- 2622
--- answer
