@@ -5,7 +5,6 @@ data Monkey = Number String Int | Function String String (Int -> Int -> Int) Str
 
 main :: IO ()
 main = do
-    -- input <- readFile "foo2.txt"
     input <- readFile "input/21.txt"
     let monkeys = map parse (lines input)
     let vals = M.fromList $ map (\(Number name val) -> (name,val)) (filter isNumber monkeys)
