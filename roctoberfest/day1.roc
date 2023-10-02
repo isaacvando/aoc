@@ -16,15 +16,27 @@ main =
     result <- Path.fromStr path |> File.readUtf8 |> Task.attempt
     when result is
         Err _ -> Stdout.line "I wasn't able to read from '\(path)'"
-        Ok file -> solve file |> Stdout.line
+        Ok file ->
+            _ <- solve1 file |> Stdout.line |> Task.await
+            solve2 file |> Stdout.line
 
-solve : Str -> Str
-solve = \input ->
+solve1 : Str -> Str
+solve1 = \input ->
     input
     |> Str.split "\n\n"
     |> List.map getSum
     |> List.max
     |> Result.withDefault 0
+    |> Num.toStr
+
+solve2 : Str -> Str
+solve2 = \input ->
+    input
+    |> Str.split "\n\n"
+    |> List.map getSum
+    |> List.sortDesc
+    |> List.sublist { start: 0, len: 3 }
+    |> List.sum
     |> Num.toStr
 
 getSum : Str -> Nat
