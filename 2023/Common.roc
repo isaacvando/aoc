@@ -2,12 +2,13 @@ interface Common
     exposes [dbge, unwrap]
     imports []
 
+dbge = \x, label ->
+    dbg
+        T label x
 
-dbge = \x, label->
-    dbg T label x
     x
 
-unwrap = \r -> 
+unwrap = \r ->
     when r is
         Err _ -> crash "unwrap encountered an Err"
         Ok val -> val
