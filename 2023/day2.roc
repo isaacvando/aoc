@@ -25,7 +25,6 @@ part1 = \input ->
     |> List.sum
     |> Num.toStr
     
-
 isImpossible = \Game _ list -> 
     (Red r, Green g, Blue b) = getTotalMax list
     r > 12 || g > 13 || b > 14
@@ -43,6 +42,24 @@ getMaxForRound = \list ->
             Blue n if n > z -> (Red x, Green y, Blue n)
             _ -> (Red x, Green y, Blue z)
 
+
+part2 = \input -> 
+    parse input 
+    |> unwrap
+    |> List.map getPower
+    |> List.sum
+    |> Num.toStr
+
+getPower = \Game _ list -> 
+    (Red r, Green g, Blue b) = getTotalMax list
+    r * g * b
+
+unwrap = \r -> 
+    when r is
+        Err _ -> crash "unwrap encountered an Err"
+        Ok val -> val
+
+# Parsing
 
 parse = \input -> 
     String.parseStr lines input
@@ -100,19 +117,3 @@ red =
     |> Core.skip (String.string " red")
 
 expect String.parseStr red "100 red" == Ok (Red 100)
-
-# parseLine = \line -> 
-#     when Str.toUtf8 line is
-#         ['G','a','m','e',':', ' ', x]
-
-
-part2 = \input -> "-"
-
-unwrap = \r -> 
-    when r is
-        Err _ -> crash "unwrap encountered an Err"
-        Ok val -> val
-
-dbge = \x -> 
-    dbg x
-    x
