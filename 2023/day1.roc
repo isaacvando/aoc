@@ -5,7 +5,6 @@ app "day1"
     imports [
         pf.Stdout,
         pf.Task.{ Task },
-        Common.{ dbge, unwrap },
         "input/1.txt" as input : Str,
     ]
     provides [main] to pf
@@ -89,3 +88,8 @@ numbers =
         ("nine", 9),
     ]
     |> List.map \(str, val) -> (Str.toUtf8 str, val)
+
+unwrap = \r -> 
+    when r is
+        Err _ -> crash "unwrap encountered an Err"
+        Ok val -> val
