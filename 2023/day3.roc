@@ -1,3 +1,5 @@
+# part 1 works, part 2 does not.
+
 app "day2"
     packages {
         pf: "https://github.com/roc-lang/basic-cli/releases/download/0.7.0/bkGby8jb0tmZYsy2hg1E_B2QrCgcSTxdUlHtETwm5m4.tar.br",
@@ -14,7 +16,7 @@ app "day2"
 
 main : Task {} I32
 main =
-    Stdout.line "Part 1: \(part1 file)\nPart 2: \(part2 file)"
+    Stdout.line "Part 1: \(part1 file)\nPart 2: _"
 
 part1 = \input ->
     input
@@ -94,22 +96,58 @@ getAdjacentIndices = \{x: natX, y: natY} ->
     |> List.map \index -> 
         {x: Num.toNat index.x, y: Num.toNat index.y}
 
-# getCoords : Nat, Nat -> List Index
-# getCoords = \natX, natY -> 
-#     x = Num.toI32 natX
-#     y = Num.toI32 natY
-#     [
-#         { x: x - 1, y: y - 1 },
-#         { x: x, y: y - 1 },
-#         { x: x + 1, y: y - 1 },
-#         { x: x - 1, y: y },
-#         { x: x + 1, y: y },
-#         { x: x - 1, y: y + 1 },
-#         { x: x, y: y + 1 },
-#         { x: x + 1, y: y + 1 },
-#     ]
 
-part2 = \input -> "_"
+part2 = \input ->
+    input
+    |> Str.split "\n"
+    |> List.map Str.toUtf8
+    |> Array2D.fromLists FitShortest
+    |> getGearRatioAdjArray
+    # |> Array2D.toLists
+    # |> List.map getNumbersInList
+    # |> dbge
+    # |> List.join
+    # |> List.sum
+    # |> Num.toStr
+
+
+getGearRatioAdjArray = \array ->
+    # dbg "in method"
+    Array2D.walk array [] {direction: Forwards} \state, elem, index -> 
+        # dbg "in when"
+        when elem is
+            '*' -> 
+                # dbg "in branch"
+                adjacentNumbers = getAdjacentIndices index 
+                    |> List.keepIf \i ->
+                        when Array2D.get array i is
+                            Ok x if List.contains zeroThroughNine x -> Bool.true
+                            _ -> Bool.false
+                    |> List.map \i -> 
+                        getLeftDigits [] array i
+                        |> List.append (Array2D.get array i |> unwrap)
+                        |> List.concat (getRightDigits [] array i)
+
+                dbg adjacentNumbers
+
+                state
+                
+            _ -> state
+
+
+getLeftDigits = \state, array, {x,y} -> 
+    if x == 0
+    then state
+    else 
+        when Array2D.get array {x: x-1,y} is
+            Ok digit if List.contains zeroThroughNine digit -> getLeftDigits (List.prepend state digit) array {x: x-1,y}
+            _ -> state
+
+getRightDigits = \state, array, {x,y} -> 
+    when Array2D.get array {x: x+1,y} is
+        Ok digit if List.contains zeroThroughNine digit -> getRightDigits (List.append state digit) array {x: x+1,y}
+        _ -> state
+
 
 unwrap = \r ->
     when r is
