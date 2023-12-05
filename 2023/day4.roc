@@ -15,30 +15,51 @@ app "day4"
 
 main : Task {} I32
 main =
-    # Stdout.line "Part 1: \(part1 file)\nPart 2: \(part2 file)"
-    dbg part1 file
-    Task.ok {}
+    cards = parse file
+    Stdout.line "Part 1: \(part1 cards)\nPart 2: \(part2 cards)"
 
 Card : {id: Nat, winners: Set Nat, actuals: List Nat}
 
 part1 = \input ->
-    parse input
+    input
     |> List.map countCard
     |> List.sum
+    |> Num.toStr
+
+part2 = \input -> 
+    collectCards input
+    |> Num.toStr
+
+collectCards = \cards -> 
+    counts = List.map cards \c -> {card: c, count: 1}
+    collectCardsHelp counts 0
+
+collectCardsHelp = \counts, total -> 
+    when counts is
+        [] -> total
+        [{card, count}, .. as rest] -> 
+            wins = getWinCount card
+            prizeCards = 
+                List.sublist rest {start: 0, len: wins}
+                |> List.map \c -> 
+                    {c & count: c.count + count}
+
+            remaining = prizeCards |> List.concat (List.dropFirst rest wins)
+
+            collectCardsHelp remaining (total + count)
 
 countCard : Card -> U64
-countCard = \{id, winners, actuals} -> 
-    winCount = List.countIf actuals \elem -> 
-        Set.contains winners elem
-
-    when winCount is
+countCard = \card -> 
+    when getWinCount card is
         0 -> 0
         count -> 
             exponent = count - 1 |> Num.toU64
             Num.powInt 2 exponent
+
+getWinCount : Card -> Nat 
+getWinCount = \{id, winners, actuals} -> 
+    List.countIf actuals \elem -> Set.contains winners elem
     
-
-
 parse : Str -> List Card
 parse = \input -> 
     spaces = Core.chompWhile \c -> c == ' '
@@ -64,14 +85,7 @@ parse = \input ->
 
     String.parseStr cards input |> unwrap
 
-
-part2 = \input -> "-"
-
 unwrap = \r -> 
     when r is
         Err _ -> crash "unwrap encountered an Err"
         Ok val -> val
-
-dbge = \x -> 
-    dbg x
-    x
