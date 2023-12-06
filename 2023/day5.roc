@@ -16,7 +16,7 @@ app "day5"
 main : Task {} I32
 main =
     # Stdout.line "Part 1: \(part1 file)\nPart 2: \(part2 file)"
-    dbg part1 example
+    dbg part1 file
     Task.ok {}
 
 Map : List {dest: Nat, source: Nat, len: Nat}
@@ -24,28 +24,29 @@ Map : List {dest: Nat, source: Nat, len: Nat}
 part1 = \input ->
     almanac = parse input
         |> unwrap
-    tables = almanac.maps 
-        |> List.map mapToTable
     almanac.seeds
     |> List.map \seed -> 
-        traverse tables seed
-    # |> List.min
-    # |> unwrap
-    
-mapToTable : Map -> Dict Nat Nat
-mapToTable = \map ->
-    List.walk map (Dict.empty {}) \dict, {dest, source, len} -> 
-        inputs = List.range {start: At source, end: Length len}
-        outputs = List.range {start: At dest, end: Length len}
-        ios = List.map2 inputs outputs \i, o -> (i,o)
-        List.walk ios dict \state, (i, o) -> 
-            Dict.insert state i o
+        traverseMaps almanac.maps seed
+    |> List.min
+    |> unwrap
 
-traverse = \tables, seed ->
-    List.walk tables seed \state, table -> 
-        when Dict.get table state is
-            Ok output -> output
-            _ -> state
+
+traverseMaps : List Map, Nat -> Nat 
+traverseMaps = \maps, seed -> 
+    List.walk maps seed \state, map -> 
+        traverseMap map state
+    
+traverseMap : Map, Nat -> Nat
+traverseMap = \map, seed ->
+    rows = List.dropIf map \{dest, source, len} ->
+        seed < source || seed > source + len
+
+    when rows is
+        [] -> seed
+        [{dest, source, len}, ..] -> 
+            offset = seed - source
+            dest + offset
+
 
 part2 = \input -> "-"
 
