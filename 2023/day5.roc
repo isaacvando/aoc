@@ -16,19 +16,37 @@ app "day5"
 main : Task {} I32
 main =
     # Stdout.line "Part 1: \(part1 file)\nPart 2: \(part2 file)"
-    dbg part1 file
-    Task.ok {}
+    # dbg part2 (parse example |> unwrap)
+    # Task.ok {}
+    Stdout.line (part2 (parse file |> unwrap ))
 
 Map : List {dest: Nat, source: Nat, len: Nat}
 
 part1 = \input ->
-    almanac = parse input
-        |> unwrap
-    almanac.seeds
+    input.seeds
     |> List.map \seed -> 
-        traverseMaps almanac.maps seed
+        traverseMaps input.maps seed
     |> List.min
     |> unwrap
+
+part2 = \input ->
+    input.seeds
+    |> getSeedRanges []
+    |> Set.fromList
+    |> Set.toList
+    |> List.map \seed -> 
+        traverseMaps input.maps seed
+    |> List.min
+    |> unwrap
+    |> Num.toStr
+
+getSeedRanges = \seeds, state -> 
+    when seeds is
+        [] -> state
+        [start, len, .. as rest] -> 
+            newState = List.concat state (List.range {start: At start, end: Length len})
+            getSeedRanges rest newState
+        _ -> crash "impossible"
 
 
 traverseMaps : List Map, Nat -> Nat 
@@ -38,17 +56,14 @@ traverseMaps = \maps, seed ->
     
 traverseMap : Map, Nat -> Nat
 traverseMap = \map, seed ->
-    rows = List.dropIf map \{dest, source, len} ->
-        seed < source || seed > source + len
+    rows = List.findFirst map \{dest, source, len} ->
+        seed >= source && seed <= source + len
 
     when rows is
-        [] -> seed
-        [{dest, source, len}, ..] -> 
+        Err _ -> seed
+        Ok {dest, source, len} -> 
             offset = seed - source
             dest + offset
-
-
-part2 = \input -> "-"
 
 parse = \input -> 
     numbers = Core.sepBy1 String.digits (String.scalar ' ')
