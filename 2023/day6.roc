@@ -6,7 +6,7 @@ app "day6"
     imports [
         pf.Stdout,
         pf.Task.{ Task },
-        parser.Core.{Parser},
+        parser.Core.{ Parser },
         parser.String,
         "input/6.txt" as file : Str,
         "input/6ex.txt" as example : Str,
@@ -15,41 +15,56 @@ app "day6"
 
 main : Task {} I32
 main =
-    # Stdout.line "Part 1: \(part1 file)\nPart 2: \(part2 file)"
-    dbg (parse example)
+
+    dbg
+        part1 (parse file)
+
     Task.ok {}
 
+part1 = \input ->
+    input
+    |> List.map countWays
+    |> List.product
 
-part1 = \input -> "_"
+countWays = \{ time, dist } ->
+    List.range { start: At 0, end: Length time }
+    |> List.countIf \buttonTime ->
+        distance buttonTime time > dist
+
+distance = \buttonTime, totalTime ->
+    buttonTime * (totalTime - buttonTime)
 
 part2 = \input -> "_"
 
-parse = \input -> 
-    eatNonDigits = Core.chompWhile \c -> 
-        !(List.contains ['0','1','2','3','4','5','6','7','8','9'] c)
+parse = \input ->
+    eatNonDigits = Core.chompWhile \c ->
+        !(List.contains ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '\n'] c)
 
-    numbers : Parser * (List Nat)
-    numbers = Core.const \x -> x
+    numbers =
+        Core.const (\x -> x)
         |> Core.skip eatNonDigits
         |> Core.keep (Core.sepBy1 String.digits eatNonDigits)
 
-    collectPage : List Nat -> (List Nat -> List {time: Nat, dist: Nat})
-    collectPage = \t -> \d -> 
-        List.map2 t d \x, y -> 
-            {time: x, dist: y}
+    collectPage = \t -> \d ->
+            List.map2 t d \x, y ->
+                { time: x, dist: y }
 
-    page = Core.const collectPage
+    page =
+        Core.const collectPage
         |> Core.keep numbers
+        |> Core.skip (String.scalar '\n')
         |> Core.keep numbers
 
     String.parseStr page input
+    |> unwrap
 
-
-unwrap = \r -> 
+unwrap = \r ->
     when r is
         Err _ -> crash "unwrap encountered an Err"
         Ok val -> val
 
-dbge = \x -> 
-    dbg x
+dbge = \x ->
+    dbg
+        x
+
     x
