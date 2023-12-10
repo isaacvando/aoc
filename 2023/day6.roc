@@ -32,7 +32,7 @@ countWays = \{ time, dist } ->
 distance = \buttonTime, totalTime ->
     buttonTime * (totalTime - buttonTime)
 
-part2 = \input -> 
+part2 = \input ->
     parse2 input
     |> countWays
     |> Num.toStr
@@ -69,7 +69,7 @@ parse2 = \input ->
         |> unwrap
 
     when Str.split input "\n" is
-        [one, two] -> {time: getNat one, dist: getNat two}
+        [one, two] -> { time: getNat one, dist: getNat two }
         _ -> crash "invalid input"
 
 unwrap = \r ->
