@@ -15,16 +15,14 @@ app "day6"
 
 main : Task {} I32
 main =
-
-    dbg
-        part1 (parse file)
-
-    Task.ok {}
+    Stdout.line "Part 1: \(part1 file)\nPart 2: \(part2 file)"
 
 part1 = \input ->
     input
+    |> parse
     |> List.map countWays
     |> List.product
+    |> Num.toStr
 
 countWays = \{ time, dist } ->
     List.range { start: At 0, end: Length time }
@@ -34,11 +32,14 @@ countWays = \{ time, dist } ->
 distance = \buttonTime, totalTime ->
     buttonTime * (totalTime - buttonTime)
 
-part2 = \input -> "_"
+part2 = \input -> 
+    parse2 input
+    |> countWays
+    |> Num.toStr
 
 parse = \input ->
     eatNonDigits = Core.chompWhile \c ->
-        !(List.contains ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '\n'] c)
+        !(isDigit c || c == '\n')
 
     numbers =
         Core.const (\x -> x)
@@ -58,13 +59,23 @@ parse = \input ->
     String.parseStr page input
     |> unwrap
 
+parse2 = \input ->
+    getNat = \line ->
+        Str.toUtf8 line
+        |> List.keepIf isDigit
+        |> Str.fromUtf8
+        |> unwrap
+        |> Str.toNat
+        |> unwrap
+
+    when Str.split input "\n" is
+        [one, two] -> {time: getNat one, dist: getNat two}
+        _ -> crash "invalid input"
+
 unwrap = \r ->
     when r is
         Err _ -> crash "unwrap encountered an Err"
         Ok val -> val
 
-dbge = \x ->
-    dbg
-        x
-
-    x
+isDigit = \c ->
+    List.contains ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'] c
