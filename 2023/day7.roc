@@ -17,12 +17,18 @@ main : Task {} I32
 main =
     # Stdout.line "Part 1: \(part1 file)\nPart 2: \(part2 file)"
     dbg
-        part1 example
+        part1 file
 
     Task.ok {}
 
 part1 = \input ->
     parse input
+    |> List.sortWith \x, y ->
+        compareHands x.hand y.hand
+    |> List.reverse
+    |> List.walkWithIndex 0 \total, {hand, bid}, index -> 
+        dbg (index + 1, bid)
+        total + bid * (index + 1)
 
 part2 = \input -> "_"
 
@@ -56,25 +62,54 @@ parse = \input ->
     String.parseStr lines input
     |> unwrap
 
+compareHands = \h1, h2 ->
+    r1 = type h1
+    r2 = type h2
+
+    if
+        r1 == r2
+    then
+        compareSameTypeHands h1 h2
+    else if
+        r1 < r2
+    then
+        LT
+    else
+        GT
+
 compareSameTypeHands = \h1, h2 ->
     when (h1, h2) is
-        ([], []) -> Eq
+        ([], []) -> EQ
         ([x, .. as xs], [y, .. as ys]) ->
             comp = compareCards x y
             when comp is
-                Eq -> compareSameTypeHands xs ys
+                EQ -> compareSameTypeHands xs ys
                 _ -> comp
 
         _ -> crash "invalid hand"
 
-compareCards = \x, y -> Eq
+compareCards = \x, y ->
+    r1 = Dict.get cardRanks x |> unwrap
+    r2 = Dict.get cardRanks y |> unwrap
 
-cardValues =
+    if
+        r1 == r2
+    then
+        EQ
+    else if
+        r1 < r2
+    then
+        LT
+    else
+        GT
+
+cardRanks =
     ranks = List.range { start: At 0, end: Length (List.len cards) }
-    # List.map2 cards ranks \x, y ->
-    Dict.empty {}
+    List.map2 cards ranks \c, r ->
+        (c, r)
+    |> Dict.fromList
 
-getType = \hand ->
+type = \hand ->
     typePredicates
     |> List.findFirstIndex \pred ->
         pred hand
