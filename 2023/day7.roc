@@ -119,13 +119,6 @@ type = \hand ->
         pred hand
     |> unwrap
 
-expect type [] == 0
-expect type [Ace] == 0
-expect type [Ace, Ace] == 0
-expect type [Ace, Queen, Queen, Ace] == 2
-expect type [Ace, Queen] == 1
-expect type [Ace, Queen, Jack] == 3
-expect type [Ace, Queen, Jack, Ten] == 5
 expect type [Ace, Queen, Jack, Ten, Nine] == 6
 
 typePredicates : List (Hand -> Bool)
@@ -141,64 +134,34 @@ typePredicates = [
 
 twoPairs : Hand -> Bool
 twoPairs = \hand ->
-    numberOfTwos =
-        getOccurances hand
-        |> Dict.values
-        |> List.countIf \count ->
-            count == 2
+    getOccurances hand
+    |> Dict.values
+    |> List.countIf \count ->
+        count == 2
+    |> \x -> x == 2
 
-    when List.len hand is
-        5 -> numberOfTwos == 2
-        4 -> numberOfTwos == 1
-        _ -> Bool.true
-
-expect twoPairs []
-expect twoPairs [Ace]
-expect twoPairs [Ace, Ace]
-expect twoPairs [Ace, King]
-expect twoPairs [Ace, Ace, Ace]
-expect !(twoPairs [Ace, King, Queen, Jack])
 expect twoPairs [Ace, Ace, Queen, Queen, Jack]
-expect twoPairs [Ace, Queen, Jack]
 expect !(twoPairs [Ace, Queen, Ten, Four, Three])
 
 fullHouse : Hand -> Bool
 fullHouse = \hand ->
     occs = getOccurances hand |> Dict.values
-    when List.len hand is
-        5 -> List.contains occs 2 && List.contains occs 3
-        4 -> List.contains occs 3 || occs == [2, 2]
-        3 -> occs == [3] || List.contains occs 2
-        _ -> Bool.true
+    List.contains occs 2 && List.contains occs 3
 
 expect fullHouse [Ace, Ace, Queen, Ace, Queen]
 expect !(fullHouse [Ace, Queen, Queen, Queen, Ten])
 expect !(fullHouse [One, Two, Three, Ten, Queen])
-expect fullHouse []
-expect fullHouse [Ace]
-expect fullHouse [Ace, Ace]
-expect fullHouse [Ace, Queen]
-expect fullHouse [Ace, Ace, Queen]
-expect !(fullHouse [One, Two, Three])
-expect fullHouse [One, Two, Two, One]
-expect !(fullHouse [One, Two, Two, Ace])
 
 nOfAKind : Nat -> (Hand -> Bool)
 nOfAKind = \n -> \hand ->
-        occs = getOccurances hand |> Dict.values
-        occs
-        == []
-        || List.any occs \count ->
-            count + (5 - List.len hand) >= n
+        getOccurances hand 
+        |> Dict.values
+        |> List.any \count ->
+            count == n
 
 expect (nOfAKind 5) [Ace, Ace, Ace, Ace, Ace]
 expect (nOfAKind 4) [Ace, Ace, Ace, Queen, Ace]
 expect (nOfAKind 3) [Ace, Jack, Ace, Queen, Ace]
-expect (nOfAKind 3) [Ace, Ace, Queen, King]
-expect (nOfAKind 1) [Ace]
-expect (nOfAKind 2) [Ace]
-expect (nOfAKind 2) []
-expect (nOfAKind 4) [Ace, Ace, Ace, Queen]
 
 getOccurances = \hand ->
     List.walk hand (Dict.empty {}) \dict, elem ->
@@ -206,23 +169,6 @@ getOccurances = \hand ->
             when val is
                 Present n -> Present (n + 1)
                 Missing -> Present 1
-
-findBestHand = \hand ->
-    hand
-
-computeAllPossible = \done, remaining ->
-    (d, r) = List.walk remaining ([], []) \(x, y), hand ->
-        when List.findFirstIndex hand \elem -> elem == Jack is
-            Ok index ->
-                combinations = List.map withoutJoker \c ->
-                    List.set hand index c
-                (x, List.concat y combinations)
-
-            _ -> (List.append x hand, y)
-
-    when r is
-        [] -> d
-        _ -> computeAllPossible d r
 
 cards = [
     Ace,
@@ -259,22 +205,6 @@ Card : [
 ]
 
 Hand : List Card
-
-withoutJoker = [
-    Ace,
-    King,
-    Queen,
-    Ten,
-    Nine,
-    Eight,
-    Seven,
-    Six,
-    Five,
-    Four,
-    Three,
-    Two,
-    One,
-]
 
 cardSymbols = [
     'A',
