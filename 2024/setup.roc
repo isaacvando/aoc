@@ -5,16 +5,18 @@ import pf.Stderr
 import pf.Http
 import pf.Arg
 import pf.File
+import pf.Env
 
 main =
     args = Arg.list! {}
     when args is
         [] | [_] -> Stderr.line "Please pass in the day you would like to set up"
         [_, day, ..] ->
+            # session = Env.var! "AOC_SESSION"
             # response =
             #    Http.defaultRequest
             #        |> &url "https://adventofcode.com/2023/day/$(day)/input"
-            #        |> &headers [{ key: "Cookie", value: "session=" }]
+            #        |> &headers [{ key: "Cookie", value: "session=$(session)" }]
             #        |> Http.send!
             response = { body: [] }
 
