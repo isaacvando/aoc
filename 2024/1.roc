@@ -2,14 +2,26 @@ app [main] { pf: platform "https://github.com/roc-lang/basic-cli/releases/downlo
 
 import pf.Stdout
 import pf.File
+import pf.Utc
 
 main =
     input = File.readUtf8! "input/1.txt"
+    part1Output = run! Part1 input
+    part2Output = run! Part2 input
     Stdout.line!
         """
-        Part 1: $(Inspect.toStr (part1 input))
-        Part 2: $(Inspect.toStr (part2 input))
+        Part 1: $(part1Output)
+        Part 2: $(part2Output)
         """
+
+run = \part, input ->
+    start = Utc.now! {}
+    result =
+        when part is
+            Part1 -> part1 input
+            Part2 -> part2 input
+    end = Utc.now! {}
+    Task.ok "$(Inspect.toStr result) in $(Utc.deltaAsMillis start end |> Num.toStr)ms"
 
 part1 = \input ->
     { left, right } = parse input
