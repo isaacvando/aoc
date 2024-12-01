@@ -50,11 +50,11 @@ parse = \input ->
     |> Str.splitOn "\n"
     |> List.map \str ->
         Str.toI32 str |> unwrap
-    |> List.walk { left: [], right: [], parity: Bool.true } \state, elem ->
-        if state.parity then
-            { state & left: List.append state.left elem, parity: !state.parity }
+    |> List.walk { left: [], right: [], parity: Bool.true } \{left, right, parity}, elem ->
+        if parity then
+            {left: List.append left elem, right, parity: !parity}
         else
-            { state & right: List.append state.right elem, parity: !state.parity }
+            {left, right: List.append right elem, parity: !parity}
 
 unwrap = \r ->
     when r is
