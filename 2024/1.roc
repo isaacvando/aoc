@@ -12,25 +12,37 @@ main =
         """
 
 part1 = \input ->
-    { left, right } =
-        input
-        |> Str.trim
-        |> Str.splitOn "\n"
-        |> List.map \elem -> Str.splitOn elem "   "
-        |> List.join
-        |> List.map \str ->
-            Str.toI32 str |> unwrap
-        |> List.walk { left: [], right: [], parity: Bool.true } \state, elem ->
-            if state.parity then
-                { state & left: List.append state.left elem, parity: !state.parity }
-            else
-                { state & right: List.append state.right elem, parity: !state.parity }
+    { left, right } = parse input
     List.map2 (List.sortAsc left) (List.sortAsc right) \l, r ->
         Num.abs (l - r)
     |> List.sum
 
 part2 = \input ->
-    "wip"
+    { left, right } = parse input
+    occurances =
+        List.walk right (Dict.empty {}) \state, elem ->
+            Dict.update state elem \r ->
+                when r is
+                    Ok count -> Ok (count + 1)
+                    Err _ -> Ok 1
+    List.map left \elem ->
+        Dict.get occurances elem
+        |> Result.withDefault 0
+        |> Num.mul elem
+    |> List.sum
+
+parse = \input ->
+    input
+    |> Str.trim
+    |> Str.replaceEach "   " "\n"
+    |> Str.splitOn "\n"
+    |> List.map \str ->
+        Str.toI32 str |> unwrap
+    |> List.walk { left: [], right: [], parity: Bool.true } \state, elem ->
+        if state.parity then
+            { state & left: List.append state.left elem, parity: !state.parity }
+        else
+            { state & right: List.append state.right elem, parity: !state.parity }
 
 unwrap = \r ->
     when r is
