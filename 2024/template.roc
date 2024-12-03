@@ -4,7 +4,7 @@ import pf.Stdout
 import pf.File
 
 main =
-    input = File.readUtf8! "input/{{DAY}}.txt"
+    input = File.readUtf8! "input/{{DAY}}.txt" |> Str.trim
     Stdout.line!
         """
         Part 1: $(Inspect.toStr (part1 input))
