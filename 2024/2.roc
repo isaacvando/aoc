@@ -10,50 +10,34 @@ main =
         Part 1: $(Inspect.toStr (part1 input))
         Part 2: $(Inspect.toStr (part2 input))
         """
-sampleInput =
-    """
-    7 6 4 2 1
-    1 2 7 8 9
-    9 7 6 2 1
-    1 3 2 4 5
-    8 6 4 4 1
-    1 3 6 7 9
-    """
+
+part1 = \input ->
+    parse? input
+        |> List.countIf isSafe
+        |> Ok
+
+isSafe = \report ->
+    diff =
+        if List.get report 0 |> unwrap < List.get report 1 |> unwrap then
+            \a, b -> b - a
+        else
+            \a, b -> a - b
+    help = \remaining ->
+        when remaining is
+            [] | [_] -> Bool.true
+            [x, y, ..] -> diff x y >= 1 && diff x y <= 3 && help (List.dropFirst remaining 1)
+    help report
 
 expect
     result = part1 sampleInput
     result == Ok 2
 
-part1 = \input ->
-    reports = try parse input
-    List.countIf reports isSafe |> Ok
+part2 = \input ->
+    parse? input
+        |> List.countIf isSafeWithDampener
+        |> Ok
 
-isSafe = \report ->
-    help = \direction, remaining ->
-        when remaining is
-            [] | [_] ->
-                Bool.true
-
-            [x, y, ..] ->
-                when direction is
-                    Tbd -> if x < y then help Increasing remaining else help Decreasing remaining
-                    Increasing ->
-                        if y - x < 1 || y - x > 3 then
-                            Bool.false
-                            else
-
-                        help Increasing (List.dropFirst remaining 1)
-
-                    Decreasing ->
-                        if x - y < 1 || x - y > 3 then
-                            Bool.false
-                            else
-
-                        help Decreasing (List.dropFirst remaining 1)
-
-    help Tbd report
-
-isSafe2 = \report ->
+isSafeWithDampener = \report ->
     help = \index ->
         if index == List.len report then
             Bool.false
@@ -62,10 +46,6 @@ isSafe2 = \report ->
         else
             help (index + 1)
     isSafe report || help 0
-
-part2 = \input ->
-    reports = try parse input
-    List.countIf reports isSafe2 |> Ok
 
 expect
     result = part2 sampleInput
@@ -79,6 +59,16 @@ parse = \input ->
     |> List.mapTry \line ->
         Str.splitOn line " "
         |> List.mapTry Str.toI32
+
+sampleInput =
+    """
+    7 6 4 2 1
+    1 2 7 8 9
+    9 7 6 2 1
+    1 3 2 4 5
+    8 6 4 4 1
+    1 3 6 7 9
+    """
 
 unwrap = \r ->
     when r is
