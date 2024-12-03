@@ -53,8 +53,23 @@ isSafe = \report ->
 
     help Tbd report
 
+isSafe2 = \report ->
+    help = \index ->
+        if index == List.len report then
+            Bool.false
+        else if List.dropAt report index |> isSafe then
+            Bool.true
+        else
+            help (index + 1)
+    isSafe report || help 0
+
 part2 = \input ->
-    "wip"
+    reports = try parse input
+    List.countIf reports isSafe2 |> Ok
+
+expect
+    result = part2 sampleInput
+    result == Ok 4
 
 parse : Str -> Result (List (List I32)) _
 parse = \input ->
