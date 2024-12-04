@@ -12,18 +12,31 @@ main =
         """
 
 part1 = \input ->
-    parse input
+    parse input Bool.false
     |> List.map \{ x, y } -> x * y
     |> List.sum
 
-part2 = \input ->
-    "wip"
+expect
+    result = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))" |> Str.toUtf8 |> part1
+    result == 161
 
-parse : List U8 -> List { x : U64, y : U64 }
-parse = \input ->
+part2 = \input ->
+    parse input Bool.true
+    |> List.map \{ x, y } -> x * y
+    |> List.sum
+
+expect
+    result = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))" |> Str.toUtf8 |> part2
+    result == 48
+
+parse : List U8, Bool -> List { x : U64, y : U64 }
+parse = \input, respectDoCommands ->
     help = \remaining, muls ->
         when remaining is
             [] -> muls
+            ['d', 'o', 'n', '\'', 't', '(', ')', .. as rest] if respectDoCommands ->
+                help (dropUntilDo rest) muls
+
             ['m', 'u', 'l', '(', .. as rest] ->
                 when parseNumber rest ',' is
                     Err _ -> help rest muls
@@ -37,6 +50,13 @@ parse = \input ->
 
     help input []
 
+dropUntilDo : List U8 -> List U8
+dropUntilDo = \input ->
+    when input is
+        [] -> []
+        ['d', 'o', '(', ')', .. as rest] -> rest
+        [_, .. as rest] -> dropUntilDo rest
+
 parseNumber : List U8, U8 -> Result { val : U64, bytes : List U8 } _
 parseNumber = \input, terminator ->
     help = \remaining, digits ->
@@ -47,17 +67,8 @@ parseNumber = \input, terminator ->
                         |> Str.toU64?
                 Ok { val: num, bytes: rest }
 
-            [x, .. as rest] if isDigit x ->
+            [x, .. as rest] if '0' <= x && x <= '9' ->
                 help rest (List.append digits x)
 
             _ -> Err (UnableToParse remaining)
     help input []
-
-isDigit = \b ->
-    '0' <= b && b <= '9'
-
-sample = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))" |> Str.toUtf8
-
-expect
-    result = part1 sample
-    result == 161
