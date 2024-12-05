@@ -13,24 +13,37 @@ main =
 
 expect
     result = part1 sampleInput
-    result == 14
+    result == 18
 
 part1 : Str -> U64
 part1 = \input ->
     grid = parse input
-    List.walkWithIndex grid 0 \total, row, x ->
-        List.walkWithIndex row total \count, elem, y ->
-            when elem is
-                'X' ->
-                    countXmas grid x y
-                    |> Result.withDefault 0
-                    |> Num.add count
+    List.mapWithIndex grid \row, x ->
+        List.mapWithIndex row \_, y ->
+            countXmas grid { x: Num.toI32 x, y: Num.toI32 y }
+        |> List.sum
+    |> List.sum
 
-                _ -> count
 
-countXmas : List (List U8), U64, U64 -> Result U64 _
-countXmas = \grid, x, y ->
-    Ok 1
+countXmas : List (List U8), { x : I32, y : I32 } -> U64
+countXmas = \grid, coord ->
+    List.map [-1, 0, 1] \x ->
+        List.map [-1, 0, 1] \y ->
+            {x, y}
+    |> List.join
+    |> List.map \{x, y} ->
+        List.map [0, 1, 2, 3] \coeff ->
+            { x: coord.x + coeff * x, y: coord.y + coeff * y }
+    |> List.countIf \indices -> isXmas indices grid
+
+isXmas = \indices, grid ->
+    letters =
+        List.mapTry indices \{ x, y } ->
+            xu = Num.toU64Checked? x
+            yu = Num.toU64Checked? y
+            List.get? grid yu |> List.get xu
+        |> Result.withDefault []
+    letters == ['X', 'M', 'A', 'S']
 
 parse : Str -> List (List U8)
 parse = \input ->
@@ -38,8 +51,12 @@ parse = \input ->
     |> Str.toUtf8
     |> List.splitOn '\n'
 
+expect
+    result = part2 sampleInput
+    result == 9
+
 part2 = \input ->
-    "wip"
+    0
 
 sampleInput =
     """
