@@ -37,8 +37,32 @@ isValid = \edit, befores ->
             Err InvalidEdit
     |> Result.isOk
 
+part2 : Str -> Result U64 _
 part2 = \input ->
-    "wip"
+    {pairs, edits} = parse? input
+    befores : Dict U64 (Set U64)
+    befores = List.walk pairs (Dict.empty {}) \dict, pair ->
+        Dict.update dict pair.0 \r ->
+            when r is
+                Err _ -> Set.fromList [pair.1] |> Ok
+                Ok set -> Set.insert set pair.1 |> Ok
+    List.keepIf edits \edit ->
+        !(isValid edit befores)
+    |> List.mapTry? \edit ->
+        #List.sortWith edit \a, b ->
+        #    aBefores = Dict.get befores a |> Result.withDefault (Set.empty {})
+        #    bBefores = Dict.get befores b |> Result.withDefault (Set.empty {})
+        #    if Set.contains aBefores b then
+        #        LT
+        #    else if Set.contains bBefores a then
+        #        GT
+        #    else
+        #        EQ
+        List.get edit (List.len edit // 2)
+    |> List.sum
+    |> Ok
+
+
 
 parse : Str -> Result {pairs: List (U64, U64), edits: List (List U64)} _
 parse = \input ->
@@ -61,6 +85,10 @@ parse = \input ->
 expect
     result = part1 sampleInput
     result == Ok 143
+
+expect
+    result = part2 sampleInput
+    result == Ok 123
 
 sampleInput =
     """
