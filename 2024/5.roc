@@ -13,17 +13,10 @@ main =
 
 part1 : Str -> Result U64 _
 part1 = \input ->
-    {pairs, edits} = parse? input
-    befores : Dict U64 (Set U64)
-    befores = List.walk pairs (Dict.empty {}) \dict, pair ->
-        Dict.update dict pair.0 \r ->
-            when r is
-                Err _ -> Set.fromList [pair.1] |> Ok
-                Ok set -> Set.insert set pair.1 |> Ok
+    {befores, edits} = parse? input
     List.keepIf edits \edit ->
         isValid edit befores
-    |> List.mapTry? \edit ->
-        List.get edit (List.len edit // 2)
+    |> List.mapTry? findMiddleElement
     |> List.sum
     |> Ok
 
@@ -39,32 +32,24 @@ isValid = \edit, befores ->
 
 part2 : Str -> Result U64 _
 part2 = \input ->
-    {pairs, edits} = parse? input
-    befores : Dict U64 (Set U64)
-    befores = List.walk pairs (Dict.empty {}) \dict, pair ->
-        Dict.update dict pair.0 \r ->
-            when r is
-                Err _ -> Set.fromList [pair.1] |> Ok
-                Ok set -> Set.insert set pair.1 |> Ok
+    {befores, edits} = parse? input
     List.keepIf edits \edit ->
         !(isValid edit befores)
     |> List.mapTry? \edit ->
-        #List.sortWith edit \a, b ->
-        #    aBefores = Dict.get befores a |> Result.withDefault (Set.empty {})
-        #    bBefores = Dict.get befores b |> Result.withDefault (Set.empty {})
-        #    if Set.contains aBefores b then
-        #        LT
-        #    else if Set.contains bBefores a then
-        #        GT
-        #    else
-        #        EQ
-        List.get edit (List.len edit // 2)
+        List.sortWith edit \a, b ->
+            aBefores = Dict.get befores a |> Result.withDefault (Set.empty {})
+            bBefores = Dict.get befores b |> Result.withDefault (Set.empty {})
+            if Set.contains aBefores b then
+                LT
+            else if Set.contains bBefores a then
+                GT
+            else
+                EQ
+        |> findMiddleElement
     |> List.sum
     |> Ok
 
-
-
-parse : Str -> Result {pairs: List (U64, U64), edits: List (List U64)} _
+parse : Str -> Result {befores: Dict U64 (Set U64), edits: List (List U64)} _
 parse = \input ->
     {before, after} = Str.splitFirst? input "\n\n"
     pairs =
@@ -80,7 +65,16 @@ parse = \input ->
         |> List.mapTry \line ->
             Str.splitOn line "," |> List.mapTry Str.toU64
         |> try
-    Ok {pairs, edits}
+    befores = List.walk pairs (Dict.empty {}) \dict, pair ->
+        Dict.update dict pair.0 \r ->
+            when r is
+                Err _ -> Set.fromList [pair.1] |> Ok
+                Ok set -> Set.insert set pair.1 |> Ok
+    Ok {befores, edits}
+
+# Only works on odd length lists
+findMiddleElement = \list ->
+    List.get list (List.len list // 2)
 
 expect
     result = part1 sampleInput
